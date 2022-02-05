@@ -29,14 +29,14 @@ setup(
     packages=["clat"],
     entry_points="""
         [console_scripts]
-        clat-avg=clat.cli:avg
-        clat-sum=clat.cli:sum
-        clat-rms=clat.cli:rms
-        clat-stddev=clat.cli:stddev
-        clat-unc=clat.cli:unc
-        clat-histogram=clat.cli:histogram
-        clat-plot=clat.cli:plot
-        clat-func=clat.cli:func
+        clat-avg=clat.cli:avg_cmd
+        clat-sum=clat.cli:sum_cmd
+        clat-rms=clat.cli:rms_cmd
+        clat-stddev=clat.cli:stddev_cmd
+        clat-unc=clat.cli:unc_cmd
+        clat-histogram=clat.cli:histogram_cmd
+        clat-plot=clat.cli:plot_cmd
+        clat-func=clat.cli:func_cmd
     """,
     install_requires=["click","numpy"],
     extras_require={

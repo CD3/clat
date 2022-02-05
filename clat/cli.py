@@ -9,7 +9,7 @@ from numpy import *
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def avg(files,delimiter):
+def avg_cmd(files,delimiter):
     """
     usage: clat-avg [FILE1 [FILE2 [...]] ]
 
@@ -47,7 +47,7 @@ def avg(files,delimiter):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def sum(files,delimiter):
+def sum_cmd(files,delimiter):
     """
     usage: clat-sum [FILE1 [FILE2 [...]] ]
 
@@ -81,7 +81,7 @@ def sum(files,delimiter):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def rms(files,delimiter):
+def rms_cmd(files,delimiter):
     """
     usage: clat-rms [FILE1 [FILE2 [...]] ]
 
@@ -118,8 +118,8 @@ def rms(files,delimiter):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-b","--biased",default=None,help="Use biased estimator (divide by n instead of n-1).")
-def stddev(files,delimiter,biased):
+@click.option("-b","--biased",is_flag=True,help="Use biased estimator (divide by n instead of n-1).")
+def stddev_cmd(files,delimiter,biased):
     """
     usage: clat-stddev [FILE1 [FILE2 [...]] ]
 
@@ -168,7 +168,7 @@ def stddev(files,delimiter,biased):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def unc(files,delimiter):
+def unc_cmd(files,delimiter):
     """
     usage: clat-unc [FILE1 [FILE2 [...]] ]
 
@@ -218,7 +218,7 @@ def unc(files,delimiter):
 @click.argument("files",nargs=-1)
 @click.option("-n","--num-bins",type=int,help="Set the number of bins that will be used. If not given, a reasonable bin number is automatically calculated.")
 @click.option("-N","--normalize",is_flag=True,help="Normalize the histogram so that it represents a probability distribution.")
-def histogram(files,num_bins,normalize):
+def histogram_cmd(files,num_bins,normalize):
     """
     usage: clat-histogram [FILE1 [FILE2 [...]] ]
 
@@ -264,7 +264,7 @@ def histogram(files,num_bins,normalize):
     x,count = bin(data,min_,max_,num_bins)
     norm = 1
     if normalize:
-      norm = sum(count)*(max_ - min_)/num_bins
+      norm = __builtins__.sum(count)*(max_ - min_)/num_bins
 
     for i in range(len(x)):
       print(x[i],count[i]/norm)
@@ -276,7 +276,7 @@ def histogram(files,num_bins,normalize):
 @click.command()
 @click.version_option()
 @click.argument("files",nargs=-1)
-def response(files):
+def response_cmd(files):
     """
     usage: clat-response [FILE1 [FILE2 [...]] ]
 
@@ -335,7 +335,7 @@ def response(files):
 @click.option("-m","--modifiers",default="",help="Appends TEXT to the plot command.")
 @click.option("-r","--pre",default="",help="Excecutes commands in TEXT before the plot command.")
 @click.option("-o","--post",default="",help="Excecutes commands in TEXT after the plot command.")
-def plot(files,modifiers,pre,post):
+def plot_cmd(files,modifiers,pre,post):
     """
     usage: clat-plot [FILE1 [FILE2 [...]] ]
 
@@ -401,7 +401,7 @@ def plot(files,modifiers,pre,post):
     default="{x}",
     help="EXPRESSION that computes the value of y (dependent variable) for a given x value. e.g. 'sin({x})'.",
 )
-def func(output,N,x_min,x_max,x,y):
+def func_cmd(output,N,x_min,x_max,x,y):
     """
     WARNING: This tool runs `eval(...)` on almost all user input. You should NOT use it on input that is not 100% trusted!
 

@@ -14,7 +14,8 @@ build-package:
 upload-package:
 	pipenv run python -m twine upload dist/*
 
-_test-install-virtualenv/bin/activate: setup.py test-install
+_test-install-virtualenv/bin/activate: setup.py
+	make test-install
 
 run-unit_tests: _test-install-virtualenv/bin/activate
 	. _test-install-virtualenv/bin/activate && cd tests && time python -m pytest -s

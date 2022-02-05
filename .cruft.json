@@ -1,6 +1,6 @@
 {
   "template": "/home/cclark/Code/sync/projects/cookiecutters/click-app",
-  "commit": "24806037666a40c126d4df6f6f1b8ff2656b7c01",
+  "commit": "54acef150d1c7340d1cc30e8446f4a39bab9dfc7",
   "checkout": null,
   "context": {
     "cookiecutter": {

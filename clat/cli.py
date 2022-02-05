@@ -335,7 +335,8 @@ def response_cmd(files):
 @click.option("-m","--modifiers",default="",help="Appends TEXT to the plot command.")
 @click.option("-r","--pre",default="",help="Excecutes commands in TEXT before the plot command.")
 @click.option("-o","--post",default="",help="Excecutes commands in TEXT after the plot command.")
-def plot_cmd(files,modifiers,pre,post):
+@click.option("-i","--interactive",is_flag=True,help="Keep gnuplot running while plot is displayed so that you can interact with the window still.")
+def plot_cmd(files,modifiers,pre,post,interactive):
     """
     usage: clat-plot [FILE1 [FILE2 [...]] ]
 
@@ -356,7 +357,10 @@ def plot_cmd(files,modifiers,pre,post):
 
     """
 
-    gnuplot_cmd = f"{pre}; plot '-' {modifiers}; {post}"
+    gnuplot_cmd = f"{pre}; plot '-' {modifiers}; {post};"
+    if interactive:
+        gnuplot_cmd += "pause mouse close;"
+
 
     subprocess.run( ["gnuplot","--persist", "-e", gnuplot_cmd])
 
@@ -374,7 +378,8 @@ def plot_cmd(files,modifiers,pre,post):
     help="Write to file named TEXT instead of stdout.",
 )
 @click.option(
-    "--N",
+    "--n",
+    type=str,
     default="10",
     help="EXPRESSION giving the number of nodes to evaluate the function at.",
 )
@@ -401,7 +406,7 @@ def plot_cmd(files,modifiers,pre,post):
     default="{x}",
     help="EXPRESSION that computes the value of y (dependent variable) for a given x value. e.g. 'sin({x})'.",
 )
-def func_cmd(output,N,x_min,x_max,x,y):
+def func_cmd(output,n,x_min,x_max,x,y):
     """
     WARNING: This tool runs `eval(...)` on almost all user input. You should NOT use it on input that is not 100% trusted!
 
@@ -453,17 +458,17 @@ def func_cmd(output,N,x_min,x_max,x,y):
     
         xmin=eval(x_min)
         xmax=eval(x_max)
-        N=eval(number_of_nodes)
+        N=eval(n)
         dx = (xmax-xmin)/(N-1)
         for i in range(N):
-            if x_function:
-                x = eval(x_function.format(i=i,N=N,x_min=x_min,x_max=x_max,dx=dx))
+            if x:
+                xval = eval(x.format(i=i,N=N,x_min=x_min,x_max=x_max,dx=dx))
             else:
-                x = eval("{x_min} + {dx}*{i}".format(i=i,N=N,x_min=xmin,x_max=xmax,dx=dx))
+                xval = eval("{x_min} + {dx}*{i}".format(i=i,N=N,x_min=xmin,x_max=xmax,dx=dx))
 
-            y = eval(y_function.format(i=i,N=N,x=x,x_min=xmin,x_max=xmax,dx=dx))
+            yval = eval(y.format(i=i,N=N,x=xval,x_min=xmin,x_max=xmax,dx=dx))
 
-            f.write(f"{x} {y}\n")
+            f.write(f"{xval} {yval}\n")
         
 
 

@@ -18,24 +18,32 @@
 
 
   $ seq 0 5 | clat-histogram
-  2.5 5
+  2.5 6.0
   $ seq 0 5 | clat-histogram -n 5
   0.5 1.0
   1.5 1.0
   2.5 1.0
   3.5 1.0
-  4.5 1.0
+  4.5 2.0
   $ seq 0 5 | clat-histogram --normalize
-  2.5 1.0
+  2.5 0.2
   $ seq 0 5 | clat-histogram -n 5 --normalize
-  0.5 1.0
-  1.5 1.0
-  2.5 1.0
-  3.5 1.0
-  4.5 1.0
+  0.5 0.166.* (re)
+  1.5 0.166.* (re)
+  2.5 0.166.* (re)
+  3.5 0.166.* (re)
+  4.5 0.333.* (re)
+
+  $ clat-func --x-min -1 --x-max 1 --n 5 --y '({x})**2'
+  -1.0 1.0
+  -0.5 0.25
+  0.0 0.0
+  0.5 0.25
+  1.0 1.0
 
 
-
+  $ cat data.txt | clat-plot
+  $ cat data.txt | clat-plot -i
 
 
 

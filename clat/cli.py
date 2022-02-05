@@ -264,7 +264,7 @@ def histogram_cmd(files,num_bins,normalize):
     x,count = bin(data,min_,max_,num_bins)
     norm = 1
     if normalize:
-      norm = __builtins__.sum(count)*(max_ - min_)/num_bins
+      norm = sum(count)*(max_ - min_)/num_bins
 
     for i in range(len(x)):
       print(x[i],count[i]/norm)

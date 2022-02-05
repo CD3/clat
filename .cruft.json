@@ -1,0 +1,18 @@
+{
+  "template": "/home/cclark/Code/sync/projects/cookiecutters/click-app",
+  "commit": "1143989d55f8e90536248bfb718e316544a1a635",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "app_name": "clat",
+      "description": "Command Line Analysis Tools: A collection of tools for doing data analysis.",
+      "year": "2022",
+      "hyphenated": "clat",
+      "underscored": "clat",
+      "github_username": "CD3",
+      "author_name": "CD Clark III",
+      "_template": "/home/cclark/Code/sync/projects/cookiecutters/click-app"
+    }
+  },
+  "directory": null
+}

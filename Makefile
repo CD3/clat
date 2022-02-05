@@ -14,10 +14,12 @@ build-package:
 upload-package:
 	pipenv run python -m twine upload dist/*
 
-run-unit_tests:
+_test-install-virtualenv/bin/activate: setup.py test-install
+
+run-unit_tests: _test-install-virtualenv/bin/activate
 	. _test-install-virtualenv/bin/activate && cd tests && time python -m pytest -s
 
-run-cli_tests:
+run-cli_tests: _test-install-virtualenv/bin/activate
 	. _test-install-virtualenv/bin/activate && cd tests && time cram *.t
 
 run-tests:

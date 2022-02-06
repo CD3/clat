@@ -1,6 +1,7 @@
 import click
 import fileinput
 import subprocess
+import re
 import math as m
 from numpy import *
 
@@ -9,7 +10,8 @@ from numpy import *
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def avg_cmd(files,delimiter):
+@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
+def avg_cmd(files,delimiter,output_delimiter):
     """
     usage: clat-avg [FILE1 [FILE2 [...]] ]
 
@@ -36,10 +38,8 @@ def avg_cmd(files,delimiter):
         except:
           pass
 
-    line = ""
-    for i in range(len(sum)):
-      line += " " + str(sum[i]/num[i])
-    print(line.strip())
+    outputs = [ str( sum[i]/num[i] ) for i in range(len(sum)) ]
+    print(output_delimiter.join(outputs))
 
 
 
@@ -47,7 +47,8 @@ def avg_cmd(files,delimiter):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def sum_cmd(files,delimiter):
+@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
+def sum_cmd(files,delimiter,output_delimiter):
     """
     usage: clat-sum [FILE1 [FILE2 [...]] ]
 
@@ -70,10 +71,8 @@ def sum_cmd(files,delimiter):
         except:
           pass
 
-    line = ""
-    for i in range(len(sum)):
-      line += " " + str(sum[i])
-    print(line.strip())
+    outputs = [ str( sum[i]) for i in range(len(sum)) ]
+    print(output_delimiter.join(outputs))
 
 
 
@@ -81,7 +80,8 @@ def sum_cmd(files,delimiter):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def rms_cmd(files,delimiter):
+@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
+def rms_cmd(files,delimiter,output_delimiter):
     """
     usage: clat-rms [FILE1 [FILE2 [...]] ]
 
@@ -108,18 +108,17 @@ def rms_cmd(files,delimiter):
         except:
           pass
 
-    line = ""
-    for i in range(len(sum)):
-      line += " " + str((sum[i]/num[i])**0.5 )
-    print(line.strip())
+    outputs = [ str((sum[i]/num[i])**0.5 ) for i in range(len(sum)) ]
+    print(output_delimiter.join(outputs))
 
 
 @click.command()
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
+@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
 @click.option("-b","--biased",is_flag=True,help="Use biased estimator (divide by n instead of n-1).")
-def stddev_cmd(files,delimiter,biased):
+def stddev_cmd(files,delimiter,output_delimiter,biased):
     """
     usage: clat-stddev [FILE1 [FILE2 [...]] ]
 
@@ -152,23 +151,25 @@ def stddev_cmd(files,delimiter,biased):
         except:
           pass
 
-    line = ""
+    outputs = []
     for i in range(len(sum)):
       if num[i] < 2:
-        line += "nan"
+        outputs.append("nan")
       else:
         N = num[i]
         if not biased:
           N = N - 1
-        line += " " + str(m.sqrt(sum[i]/N))
-    print(line.strip())
+        outputs.append(str(m.sqrt(sum[i]/N)))
+
+    print(output_delimiter.join(outputs))
 
 
 @click.command()
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-def unc_cmd(files,delimiter):
+@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
+def unc_cmd(files,delimiter,output_delimiter):
     """
     usage: clat-unc [FILE1 [FILE2 [...]] ]
 
@@ -201,14 +202,15 @@ def unc_cmd(files,delimiter):
         except:
           pass
 
-    line = ""
+    outputs = []
     for i in range(len(sum)):
       if num[i] < 2:
-        line += "nan"
+        outputs.append("nan")
       else:
         N = num[i]
-        line += " " + str(m.sqrt(sum[i]/(N-1))/m.sqrt(N))
-    print(line.strip())
+        outputs.append(str(m.sqrt(sum[i]/(N-1))/m.sqrt(N)))
+
+    print(output_delimiter.join(outputs))
 
 
 
@@ -475,6 +477,62 @@ def func_cmd(output,n,x_min,x_max,x,y):
 
     
 
+@click.command()
+@click.version_option()
+@click.argument("expression",nargs=1)
+@click.argument("files",nargs=-1)
+@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
+@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
+@click.option("-e","--expression-delimiter",default=",",help="Use TEXT delimite output columns.")
+def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimiter):
+    """
+    WARNING: This tool runs `eval(...)` on user input. You should NOT use it on input that is not 100% trusted!
+
+    usage: clat-transform EXPRESSION [FILE1 [FILE2 [...]] ]
+
+    Transform a (columnated) data stream, similar to gawk.
+
+    Given a stream of columnatede data, delimited by white space, we can transform the data with gawk doing something like this
+
+    $ command_producing_output | gawk '{print $1,$2*$2}'
+
+    This would output a data stream with two columns, where the first output column is just the first input column,
+    and the second output column is the secodn input column squared. This is nice, but having to use {print...} is
+    a little tedious. With clat-transform, we can do this
+
+    $ command_producing_output | clat-transform '$1,$2*$2'
+
+    Whch is enough better to motiviate writing it.
+
+    Disclaimer: gawk is *way* more powerful than clat-transform. gawk has all kinds of features and does many more things than clat-transform. The
+    point of clat-transform is to provide a simple tool for the cases when you are just doing a {print ...} with gawk. It also has access
+    to numpy, so you can do all kinds of calculations with special functions.
+
+    One major limitation currently is that the transformation expression is not really parsed, it is just split on a delimiter. That means that
+    you can use expressions that include commas by default. i.e., you can't do
+
+    $ command_producing_output | clat-transform '$1,arctan2($2,$3)'
+
+    But, you can change the expression delimitter to somoething else, so this is possible
+
+    $ command_producing_output | clat-transform -e '|' '$1|arctan2($2,$3)'
+
+    The expression parser might be improved sometime in the future, but for now, this works.
+    """
+
+    # Found this on stackoverflow: https://stackoverflow.com/questions/12941362/is-it-possible-to-increment-numbers-using-regex-substitution
+    # we need to decrement the match instead of increment, but otherwise they are the same
+    # currently, this only works for data with up to 9 columns...
+    expression = re.sub(r'\$(\d+)',r"{\1~9876543210}",expression)
+    expression = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",expression)
+    expression = re.sub(r'~[0-9]*',r"",expression)
+
+    expressions = expression.split(expression_delimiter)
+    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
+      fields = line.split(delimiter)
+      outputs = [ str(eval(e.format(*fields))) for e in expressions ]
+
+      print(output_delimiter.join(outputs))
 
 
 

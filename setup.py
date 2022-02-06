@@ -37,6 +37,7 @@ setup(
         clat-histogram=clat.cli:histogram_cmd
         clat-plot=clat.cli:plot_cmd
         clat-func=clat.cli:func_cmd
+        clat-transform=clat.cli:transform_cmd
     """,
     install_requires=["click","numpy"],
     extras_require={

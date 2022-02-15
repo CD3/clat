@@ -2,6 +2,7 @@ import click
 import fileinput
 import subprocess
 import re
+import sys
 import math as m
 from numpy import *
 
@@ -537,3 +538,44 @@ def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimit
 
 
 
+
+@click.command()
+@click.version_option()
+@click.argument("expression",nargs=1)
+@click.argument("files",nargs=-1)
+@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
+@click.option("-n","--negate",is_flag=True,help="Negate the expression, print lines that do NOT match.")
+def filter_cmd(expression,files,delimiter,negate):
+    """
+    WARNING: This tool runs `eval(...)` on user input. You should NOT use it on input that is not 100% trusted!
+
+    usage: clat-filter PRESSION [FILE1 [FILE2 [...]] ]
+
+    Filter a (columnated) data stream based on some predicate expression, similar to gawk.
+
+    Given a stream of columnatede data, delimited by white space, we can filter the data to remove an lines
+    where the first column is negative with gawk
+
+    $ command_producing_output | gawk '$1 >= 0{print $02}'
+
+    This is nice, but having to use {print...} is
+    a little tedious. With clat-filter, we can do this
+
+    $ command_producing_output | clat-filter '$1 >= 0'
+    """
+
+    # Found this on stackoverflow: https://stackoverflow.com/questions/12941362/is-it-possible-to-increment-numbers-using-regex-substitution
+    # we need to decrement the match instead of increment, but otherwise they are the same
+    # currently, this only works for data with up to 9 columns...
+    expression = re.sub(r'\$(\d+)',r"{\1~9876543210}",expression)
+    expression = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",expression)
+    expression = re.sub(r'~[0-9]*',r"",expression)
+
+    lineno = 0
+    for _line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
+      fields = _line.split(delimiter)
+      lineno += 1
+      line = _line.rstrip()
+      match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
+      if (not negate and match) or (negate and (not match)):
+          sys.stdout.write(_line)

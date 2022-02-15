@@ -38,6 +38,7 @@ setup(
         clat-plot=clat.cli:plot_cmd
         clat-func=clat.cli:func_cmd
         clat-transform=clat.cli:transform_cmd
+        clat-filter=clat.cli:filter_cmd
     """,
     install_requires=["click","numpy"],
     extras_require={

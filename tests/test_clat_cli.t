@@ -41,6 +41,24 @@
   0.5 0.25
   1.0 1.0
 
+  $ cat data.txt | clat-transform '$1'
+  1
+  2
+  3
+
+  $ cat data.txt | clat-transform '$1,$2*$3'
+  1 1
+  2 6
+  3 16
+
+  $ cat data.txt | clat-filter '$1 > 2'
+  3 4 4
+  $ cat data.txt | clat-filter '$1 > 2' -n
+  1 1 1
+  2 2 3
+  $ cat data.txt | clat-filter '$3 > 3 or $1 < 2'
+  1 1 1
+  3 4 4
 
   $ cat data.txt | clat-plot
   $ cat data.txt | clat-plot -i

@@ -1,229 +1,262 @@
-import click
 import fileinput
-import subprocess
-import re
-import sys
 import math as m
-from numpy import *
+import re
+import subprocess
+import sys
+
+import click
 import scipy.interpolate
 import scipy.optimize
+from numpy import *
+from scipy.special import *
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
-def avg_cmd(files,delimiter,output_delimiter):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-o", "--output-delimiter", default=" ", help="Use TEXT delimite output columns."
+)
+def avg_cmd(files, delimiter, output_delimiter):
     """
     usage: clat-avg [FILE1 [FILE2 [...]] ]
 
     Computes the average of a list of numbers read from a list of files or standard input.
-    
+
     If multiple columns of data exists (separated by the --delimiter option), the average for each
     column is computed.
     """
     sum = []
     num = []
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = line.split(delimiter)
-      for i in range(len(fields)):
-        try:
-          x = float(fields[i])
-          if i == len(sum):
-            sum.append(0)
-          if i == len(num):
-            num.append(0)
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = line.split(delimiter)
+        for i in range(len(fields)):
+            try:
+                x = float(fields[i])
+                if i == len(sum):
+                    sum.append(0)
+                if i == len(num):
+                    num.append(0)
 
-          sum[i] += x
-          num[i] += 1
+                sum[i] += x
+                num[i] += 1
 
-        except:
-          pass
+            except:
+                pass
 
-    outputs = [ str( sum[i]/num[i] ) for i in range(len(sum)) ]
+    outputs = [str(sum[i] / num[i]) for i in range(len(sum))]
     print(output_delimiter.join(outputs))
-
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
-def sum_cmd(files,delimiter,output_delimiter):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-o", "--output-delimiter", default=" ", help="Use TEXT delimite output columns."
+)
+def sum_cmd(files, delimiter, output_delimiter):
     """
     usage: clat-sum [FILE1 [FILE2 [...]] ]
 
     Computes the sum of a list of numbers read from a list of files or standard input.
-    
+
     If multiple columns of data exists (separated by the --delimiter option), the sum for each
     column is computed.
     """
     sum = []
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = line.split(delimiter)
-      for i in range(len(fields)):
-        try:
-          x = float(fields[i])
-          if i == len(sum):
-            sum.append(0)
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = line.split(delimiter)
+        for i in range(len(fields)):
+            try:
+                x = float(fields[i])
+                if i == len(sum):
+                    sum.append(0)
 
-          sum[i] += x
+                sum[i] += x
 
-        except:
-          pass
+            except:
+                pass
 
-    outputs = [ str( sum[i]) for i in range(len(sum)) ]
+    outputs = [str(sum[i]) for i in range(len(sum))]
     print(output_delimiter.join(outputs))
-
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
-def rms_cmd(files,delimiter,output_delimiter):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-o", "--output-delimiter", default=" ", help="Use TEXT delimite output columns."
+)
+def rms_cmd(files, delimiter, output_delimiter):
     """
     usage: clat-rms [FILE1 [FILE2 [...]] ]
 
     Computes the Root Mean Square (RMS) of a list of numbers read from a list of files or standard input.
-    
+
     If multiple columns of data exists (separated by the --delimiter option), the RMS for each
     column is computed.
     """
     sum = []
     num = []
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = line.split(delimiter)
-      for i in range(len(fields)):
-        try:
-          x = float(fields[i])
-          if i == len(sum):
-            sum.append(0)
-          if i == len(num):
-            num.append(0)
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = line.split(delimiter)
+        for i in range(len(fields)):
+            try:
+                x = float(fields[i])
+                if i == len(sum):
+                    sum.append(0)
+                if i == len(num):
+                    num.append(0)
 
-          sum[i] += x*x
-          num[i] += 1
+                sum[i] += x * x
+                num[i] += 1
 
-        except:
-          pass
+            except:
+                pass
 
-    outputs = [ str((sum[i]/num[i])**0.5 ) for i in range(len(sum)) ]
+    outputs = [str((sum[i] / num[i]) ** 0.5) for i in range(len(sum))]
     print(output_delimiter.join(outputs))
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
-@click.option("-b","--biased",is_flag=True,help="Use biased estimator (divide by n instead of n-1).")
-def stddev_cmd(files,delimiter,output_delimiter,biased):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-o", "--output-delimiter", default=" ", help="Use TEXT delimite output columns."
+)
+@click.option(
+    "-b",
+    "--biased",
+    is_flag=True,
+    help="Use biased estimator (divide by n instead of n-1).",
+)
+def stddev_cmd(files, delimiter, output_delimiter, biased):
     """
     usage: clat-stddev [FILE1 [FILE2 [...]] ]
 
     Computes the standard deviation of a list of numbers read from a list of files or standard input.
-    
+
     If multiple columns of data exists (separated by the --delimiter option), the standard deviation for each
     column is computed.
     """
     avg = []
     sum = []
     num = []
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = line.split(delimiter)
-      for i in range(len(fields)):
-        try:
-          x = float(fields[i])
-          if i == len(avg):
-            avg.append(0)
-          if i == len(sum):
-            sum.append(0)
-          if i == len(num):
-            num.append(0)
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = line.split(delimiter)
+        for i in range(len(fields)):
+            try:
+                x = float(fields[i])
+                if i == len(avg):
+                    avg.append(0)
+                if i == len(sum):
+                    sum.append(0)
+                if i == len(num):
+                    num.append(0)
 
-          num[i] += 1
-          delta = x - avg[i]
-          avg[i] += delta/num[i]
-          delta2 = x - avg[i]
-          sum[i] += delta*delta2
+                num[i] += 1
+                delta = x - avg[i]
+                avg[i] += delta / num[i]
+                delta2 = x - avg[i]
+                sum[i] += delta * delta2
 
-        except:
-          pass
+            except:
+                pass
 
     outputs = []
     for i in range(len(sum)):
-      if num[i] < 2:
-        outputs.append("nan")
-      else:
-        N = num[i]
-        if not biased:
-          N = N - 1
-        outputs.append(str(m.sqrt(sum[i]/N)))
+        if num[i] < 2:
+            outputs.append("nan")
+        else:
+            N = num[i]
+            if not biased:
+                N = N - 1
+            outputs.append(str(m.sqrt(sum[i] / N)))
 
     print(output_delimiter.join(outputs))
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
-def unc_cmd(files,delimiter,output_delimiter):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-o", "--output-delimiter", default=" ", help="Use TEXT delimite output columns."
+)
+def unc_cmd(files, delimiter, output_delimiter):
     """
     usage: clat-unc [FILE1 [FILE2 [...]] ]
 
     Computes the uncertainty (standard error of the mean) of a list of numbers read from a list of files or standard input.
-    
+
     If multiple columns of data exists (separated by the --delimiter option), the uncertianty for each
     column is computed.
     """
     avg = []
     sum = []
     num = []
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = line.split(delimiter)
-      for i in range(len(fields)):
-        try:
-          x = float(fields[i])
-          if i == len(avg):
-            avg.append(0)
-          if i == len(sum):
-            sum.append(0)
-          if i == len(num):
-            num.append(0)
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = line.split(delimiter)
+        for i in range(len(fields)):
+            try:
+                x = float(fields[i])
+                if i == len(avg):
+                    avg.append(0)
+                if i == len(sum):
+                    sum.append(0)
+                if i == len(num):
+                    num.append(0)
 
-          num[i] += 1
-          delta = x - avg[i]
-          avg[i] += delta/num[i]
-          delta2 = x - avg[i]
-          sum[i] += delta*delta2
+                num[i] += 1
+                delta = x - avg[i]
+                avg[i] += delta / num[i]
+                delta2 = x - avg[i]
+                sum[i] += delta * delta2
 
-        except:
-          pass
+            except:
+                pass
 
     outputs = []
     for i in range(len(sum)):
-      if num[i] < 2:
-        outputs.append("nan")
-      else:
-        N = num[i]
-        outputs.append(str(m.sqrt(sum[i]/(N-1))/m.sqrt(N)))
+        if num[i] < 2:
+            outputs.append("nan")
+        else:
+            N = num[i]
+            outputs.append(str(m.sqrt(sum[i] / (N - 1)) / m.sqrt(N)))
 
     print(output_delimiter.join(outputs))
 
 
-
-
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-n","--num-bins",type=int,help="Set the number of bins that will be used. If not given, a reasonable bin number is automatically calculated.")
-@click.option("-N","--normalize",is_flag=True,help="Normalize the histogram so that it represents a probability distribution.")
-def histogram_cmd(files,num_bins,normalize):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-n",
+    "--num-bins",
+    type=int,
+    help="Set the number of bins that will be used. If not given, a reasonable bin number is automatically calculated.",
+)
+@click.option(
+    "-N",
+    "--normalize",
+    is_flag=True,
+    help="Normalize the histogram so that it represents a probability distribution.",
+)
+def histogram_cmd(files, num_bins, normalize):
     """
     usage: clat-histogram [FILE1 [FILE2 [...]] ]
 
@@ -232,55 +265,49 @@ def histogram_cmd(files,num_bins,normalize):
 
     data = []
 
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      try:
-        x = float(line)
-        data.append(x)
-      except:
-        pass
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        try:
+            x = float(line)
+            data.append(x)
+        except:
+            pass
 
     n = len(data)
     min_ = min(data)
     max_ = max(data)
 
+    def bin(data, min, max_, n):
+        # bin width
+        dx = (max_ - min_) / n  # number of bins *is* number of intervals
+        x = [min_ + dx * (i + 0.5) for i in range(n)]
+        count = [0] * n
 
-    def bin(data,min,max_,n):
-      # bin width
-      dx = (max_ - min_)/n # number of bins *is* number of intervals
-      x = [ min_ + dx*(i+0.5) for i in range(n) ]
-      count = [0]*n
+        for d in data:
+            i = int((d - min_) / dx)
+            if i >= n:
+                i = n - 1
+            count[i] += 1
 
-      for d in data:
-        i = int( (d - min_)/dx )
-        if i >= n:
-          i = n-1
-        count[i] += 1
-
-      return x,count
-
-
+        return x, count
 
     # if the number of bins is not defined,
     # try to determine what the best bin count would be
     nbins = num_bins
     if num_bins is None:
-      num_bins = int(n / 10)+1
+        num_bins = int(n / 10) + 1
 
-    x,count = bin(data,min_,max_,num_bins)
+    x, count = bin(data, min_, max_, num_bins)
     norm = 1
     if normalize:
-      norm = sum(count)*(max_ - min_)/num_bins
+        norm = sum(count) * (max_ - min_) / num_bins
 
     for i in range(len(x)):
-      print(x[i],count[i]/norm)
-
-
-
+        print(x[i], count[i] / norm)
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
+@click.argument("files", nargs=-1)
 def response_cmd(files):
     """
     usage: clat-response [FILE1 [FILE2 [...]] ]
@@ -313,35 +340,49 @@ def response_cmd(files):
     This is useful for analyzing damage threshold data.
     """
 
-
     data = {}
 
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      tokens = line.split()
-      try:
-        x = float(tokens[0])
-        if not x in data:
-          data[x] = {'yes' : 0, 'total' : 0 }
-        c = 1
-        if len(tokens) > 1:
-          c = int(tokens[1])
-        data[x]['yes'] += c
-        data[x]['total'] += 1
-      except:
-        pass
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        tokens = line.split()
+        try:
+            x = float(tokens[0])
+            if not x in data:
+                data[x] = {"yes": 0, "total": 0}
+            c = 1
+            if len(tokens) > 1:
+                c = int(tokens[1])
+            data[x]["yes"] += c
+            data[x]["total"] += 1
+        except:
+            pass
 
     for k in data:
-      print(k,data[k]['yes'],data[k]['total'])
+        print(k, data[k]["yes"], data[k]["total"])
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-m","--modifiers",default="",help="Appends TEXT to the plot command.")
-@click.option("-r","--pre",default="",help="Excecutes commands in TEXT before the plot command.")
-@click.option("-o","--post",default="",help="Excecutes commands in TEXT after the plot command.")
-@click.option("-i","--interactive",is_flag=True,help="Keep gnuplot running while plot is displayed so that you can interact with the window still.")
-def plot_cmd(files,modifiers,pre,post,interactive):
+@click.argument("files", nargs=-1)
+@click.option("-m", "--modifiers", default="", help="Appends TEXT to the plot command.")
+@click.option(
+    "-r",
+    "--pre",
+    default="",
+    help="Excecutes commands in TEXT before the plot command.",
+)
+@click.option(
+    "-o",
+    "--post",
+    default="",
+    help="Excecutes commands in TEXT after the plot command.",
+)
+@click.option(
+    "-i",
+    "--interactive",
+    is_flag=True,
+    help="Keep gnuplot running while plot is displayed so that you can interact with the window still.",
+)
+def plot_cmd(files, modifiers, pre, post, interactive):
     """
     usage: clat-plot [FILE1 [FILE2 [...]] ]
 
@@ -366,12 +407,7 @@ def plot_cmd(files,modifiers,pre,post,interactive):
     if interactive:
         gnuplot_cmd += "pause mouse close;"
 
-
-    subprocess.run( ["gnuplot","--persist", "-e", gnuplot_cmd])
-
-
-
-
+    subprocess.run(["gnuplot", "--persist", "-e", gnuplot_cmd])
 
 
 @click.command()
@@ -411,7 +447,7 @@ def plot_cmd(files,modifiers,pre,post,interactive):
     default="{x}",
     help="EXPRESSION that computes the value of y (dependent variable) for a given x value. e.g. 'sin({x})'.",
 )
-def func_cmd(output,n,x_min,x_max,x,y):
+def func_cmd(output, n, x_min, x_max, x, y):
     """
     WARNING: This tool runs `eval(...)` on almost all user input. You should NOT use it on input that is not 100% trusted!
 
@@ -429,14 +465,14 @@ def func_cmd(output,n,x_min,x_max,x,y):
 
     For example
 
-    $ func -N 100 --x-min -2 --x-max 2 --y "exp(-({x}/0.1)**2)"
+    $ func -n 100 --x-min -2 --x-max 2 --y "exp(-({x}/0.1)**2)"
 
     Will print 100 points from a Gaussian function evauated between -2 and 2.
 
     All options identified as EXPRESSION are evaluated with eval(...), and the result is taken as the parameter's value.
     This allows the user to 'compute' the value for every parameter. For example, so output sin from 0 to 2 pi
 
-    $ func -N 100 --x-min 0 --x-max 2*pi --y "sin({x})"
+    $ func -n 100 --x-min 0 --x-max 2*pi --y "sin({x})"
 
     The expression evaluation for the --x and --y options are first formatted with string.format(), so you can refer to a few special variables
     inside the expressing using the {varname} syntax. The special variables are:
@@ -458,38 +494,57 @@ def func_cmd(output,n,x_min,x_max,x,y):
     if output == "-":
         output = "/dev/stdout"
 
-
-    with open(output,"w") as f:
-    
-        xmin=eval(x_min)
-        xmax=eval(x_max)
-        N=eval(n)
-        dx = (xmax-xmin)/(N-1)
+    with open(output, "w") as f:
+        xmin = eval(x_min)
+        xmax = eval(x_max)
+        N = eval(n)
+        dx = (xmax - xmin) / (N - 1)
+        if not x:
+            x = "{x_min} + {dx}*{i}"
+        # need to wrap var references in parenthesis so that negative
+        # numbers will behave as a user would expect. i.e. x**2 will
+        # give 4 when x = 2.
+        for var in ["i", "x", "y", "x_min", "x_max", "dx"]:
+            x = x.replace(f"{{{var}}}", f"({{{var}}})")
+            y = y.replace(f"{{{var}}}", f"({{{var}}})")
         for i in range(N):
-            if x:
-                xval = eval(x.format(i=i,N=N,x_min=x_min,x_max=x_max,dx=dx))
-            else:
-                xval = eval("{x_min} + {dx}*{i}".format(i=i,N=N,x_min=xmin,x_max=xmax,dx=dx))
-
-            yval = eval(y.format(i=i,N=N,x=xval,x_min=xmin,x_max=xmax,dx=dx))
-
+            xval = eval(x.format(i=i, N=N, x_min=x_min, x_max=x_max, dx=dx))
+            yval = eval(y.format(i=i, N=N, x=xval, x_min=xmin, x_max=xmax, dx=dx))
             f.write(f"{xval} {yval}\n")
-        
 
-
-
-    
 
 @click.command()
 @click.version_option()
-@click.argument("expression",nargs=1)
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
-@click.option("-e","--expression-delimiter",default=",",help="Use TEXT delimite output columns.")
-@click.option("-c","--condition",default=None,help="Only apply transform to lines matching conditional.")
-@click.option("-v","--show_errors",is_flag=True,help="Show errors...")
-def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimiter,condition,show_errors):
+@click.argument("expression", nargs=1)
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-o", "--output-delimiter", default=" ", help="Use TEXT delimite output columns."
+)
+@click.option(
+    "-e",
+    "--expression-delimiter",
+    default=",",
+    help="Use TEXT delimite output columns.",
+)
+@click.option(
+    "-c",
+    "--condition",
+    default=None,
+    help="Only apply transform to lines matching conditional.",
+)
+@click.option("-v", "--show_errors", is_flag=True, help="Show errors...")
+def transform_cmd(
+    expression,
+    files,
+    delimiter,
+    output_delimiter,
+    expression_delimiter,
+    condition,
+    show_errors,
+):
     """
     WARNING: This tool runs `eval(...)` on user input. You should NOT use it on input that is not 100% trusted!
 
@@ -528,50 +583,60 @@ def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimit
     # Found this on stackoverflow: https://stackoverflow.com/questions/12941362/is-it-possible-to-increment-numbers-using-regex-substitution
     # we need to decrement the match instead of increment, but otherwise they are the same
     # currently, this only works for data with up to 9 columns...
-    expression = re.sub(r'\$(\d+)',r"{\1~9876543210}",expression)
-    expression = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",expression)
-    expression = re.sub(r'~[0-9]*',r"",expression)
+    expression = re.sub(r"\$(\d+)", r"{\1~9876543210}", expression)
+    expression = re.sub(r"([0-9])(?=9*~[0-9]*?\1([0-9]))", r"\2", expression)
+    expression = re.sub(r"~[0-9]*", r"", expression)
     if condition:
-        condition = re.sub(r'\$(\d+)',r"{\1~9876543210}",condition)
-        condition = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",condition)
-        condition = re.sub(r'~[0-9]*',r"",condition)
+        condition = re.sub(r"\$(\d+)", r"{\1~9876543210}", condition)
+        condition = re.sub(r"([0-9])(?=9*~[0-9]*?\1([0-9]))", r"\2", condition)
+        condition = re.sub(r"~[0-9]*", r"", condition)
 
     expressions = expression.split(expression_delimiter)
-    for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = line.split(delimiter)
-      transform = False
-      if condition is not None:
-          try:
-              result = eval(condition.format(*fields))
-              if type(result) == bool:
-                  transform = result
-              else:
-                  transform = True
-          except Exception as e:
-              if show_errors:
-                  sys.stderr.write(f"Error in conditional on line '{line.rstrip()}': '{e}'\n")
-      else:
-          transform = True
+    for line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = line.split(delimiter)
+        transform = False
+        if condition is not None:
+            try:
+                result = eval(condition.format(*fields))
+                if type(result) == bool:
+                    transform = result
+                else:
+                    transform = True
+            except Exception as e:
+                if show_errors:
+                    sys.stderr.write(
+                        f"Error in conditional on line '{line.rstrip()}': '{e}'\n"
+                    )
+        else:
+            transform = True
 
-      if transform:
-          outputs = [ str(eval(e.format(*fields))) for e in expressions ]
-          print(output_delimiter.join(outputs))
-      else:
-          sys.stdout.write(line)
-
-
-
-
+        if transform:
+            outputs = [str(eval(e.format(*fields))) for e in expressions]
+            print(output_delimiter.join(outputs))
+        else:
+            sys.stdout.write(line)
 
 
 @click.command()
 @click.version_option()
-@click.argument("expression",nargs=1)
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("-n","--negate",is_flag=True,help="Negate the expression, print lines that do NOT match.")
-@click.option("-t","--try-expression",is_flag=True,help="Use try/catch block to test expression and consider a exception to be failure.")
-def filter_cmd(expression,files,delimiter,negate,try_expression):
+@click.argument("expression", nargs=1)
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option(
+    "-n",
+    "--negate",
+    is_flag=True,
+    help="Negate the expression, print lines that do NOT match.",
+)
+@click.option(
+    "-t",
+    "--try-expression",
+    is_flag=True,
+    help="Use try/catch block to test expression and consider a exception to be failure.",
+)
+def filter_cmd(expression, files, delimiter, negate, try_expression):
     """
     WARNING: This tool runs `eval(...)` on user input. You should NOT use it on input that is not 100% trusted!
 
@@ -593,38 +658,45 @@ def filter_cmd(expression,files,delimiter,negate,try_expression):
     # Found this on stackoverflow: https://stackoverflow.com/questions/12941362/is-it-possible-to-increment-numbers-using-regex-substitution
     # we need to decrement the match instead of increment, but otherwise they are the same
     # currently, this only works for data with up to 9 columns...
-    expression = re.sub(r'\$(\d+)',r"{\1~9876543210}",expression)
-    expression = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",expression)
-    expression = re.sub(r'~[0-9]*',r"",expression)
+    expression = re.sub(r"\$(\d+)", r"{\1~9876543210}", expression)
+    expression = re.sub(r"([0-9])(?=9*~[0-9]*?\1([0-9]))", r"\2", expression)
+    expression = re.sub(r"~[0-9]*", r"", expression)
 
     lineno = 0
-    for _line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = _line.split(delimiter)
-      lineno += 1
-      line = _line.rstrip()
-      if try_expression:
-          try:
-              match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
-          except:
-              match = False
-      else:
-          match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
+    for _line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = _line.split(delimiter)
+        lineno += 1
+        line = _line.rstrip()
+        if try_expression:
+            try:
+                match = eval(
+                    expression.format(*fields, lineno=lineno, line=line.rstrip())
+                )
+            except:
+                match = False
+        else:
+            match = eval(expression.format(*fields, lineno=lineno, line=line.rstrip()))
 
-      if (not negate and match) or (negate and (not match)):
-          sys.stdout.write(_line)
-
+        if (not negate and match) or (negate and (not match)):
+            sys.stdout.write(_line)
 
 
 @click.command()
 @click.version_option()
-@click.argument("files",nargs=-1)
-@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("--y",default=0.,help="The y-value to search for.")
-@click.option("--x0",default=None,help="The starting point.")
-@click.option("--x-min",default=None,help="The minimum x value to look at.")
-@click.option("--x-max",default=None,help="The maximum x value to look at.")
-@click.option("--tolerance",default=1e-8,help="The required tolerance. Search will hault if two consecutive iterations differ (percent error) by less than tolerance.")
-def solve_cmd(files,delimiter,x_min,x_max,y,x0,tolerance):
+@click.argument("files", nargs=-1)
+@click.option(
+    "-d", "--delimiter", default=None, help="Use TEXT to split lines into columns."
+)
+@click.option("--y", default=0.0, help="The y-value to search for.")
+@click.option("--x0", default=None, help="The starting point.")
+@click.option("--x-min", default=None, help="The minimum x value to look at.")
+@click.option("--x-max", default=None, help="The maximum x value to look at.")
+@click.option(
+    "--tolerance",
+    default=1e-8,
+    help="The required tolerance. Search will hault if two consecutive iterations differ (percent error) by less than tolerance.",
+)
+def solve_cmd(files, delimiter, x_min, x_max, y, x0, tolerance):
     """
     Find the argument of a function that gives a specific y value.
     """
@@ -632,10 +704,10 @@ def solve_cmd(files,delimiter,x_min,x_max,y,x0,tolerance):
     x_values = []
     y_values = []
 
-    for _line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
-      fields = _line.split(delimiter)
-      x_values.append(float(fields[0]))
-      y_values.append(float(fields[1]))
+    for _line in fileinput.input(files=files if len(files) > 0 else ("-",)):
+        fields = _line.split(delimiter)
+        x_values.append(float(fields[0]))
+        y_values.append(float(fields[1]))
 
     if x_min:
         x_min = float(x_min)
@@ -648,14 +720,16 @@ def solve_cmd(files,delimiter,x_min,x_max,y,x0,tolerance):
         x_max = x_values[-1]
 
     if x0 is None:
-        x0 = (x_max - x_min)/2
+        x0 = (x_max - x_min) / 2
     else:
         x0 = float(x0)
 
-    interp = scipy.interpolate.interp1d(x_values,y_values,kind='cubic',fill_value='extrapolate')
+    interp = scipy.interpolate.interp1d(
+        x_values, y_values, kind="cubic", fill_value="extrapolate"
+    )
 
-    x = scipy.optimize.fsolve( lambda x: interp(x) - y, x0, xtol=tolerance )[0]
-    
+    x = scipy.optimize.fsolve(lambda x: interp(x) - y, x0, xtol=tolerance)[0]
+
     if x < x_min:
         print(f"< {x_min}")
 
@@ -664,6 +738,3 @@ def solve_cmd(files,delimiter,x_min,x_max,y,x0,tolerance):
 
     else:
         print(x)
-
-    
-

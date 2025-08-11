@@ -47,6 +47,6 @@ clat-solve = "clat.cli:solve_cmd"
 packages = ["clat"]
 
 [dependency-group.dev]
-dev = [
+dependencies = [
     "cram",
 ]

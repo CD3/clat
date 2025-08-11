@@ -512,6 +512,132 @@ def func_cmd(output, n, x_min, x_max, x, y):
             yval = eval(y.format(i=i, N=N, x=xval, x_min=xmin, x_max=xmax, dx=dx))
             f.write(f"{xval} {yval}\n")
 
+@click.command()
+@click.version_option()
+@click.option(
+    "-o",
+    "--output",
+    default="-",
+    help="Write to file named TEXT instead of stdout.",
+)
+@click.option(
+    "--n",
+    type=str,
+    default="10",
+    help="EXPRESSION giving the number of nodes to evaluate the function at.",
+)
+@click.option(
+    "--x",
+    type=str,
+    help="EXPRESSION that computes the the value of x (independent variable) for the i'th element. e.g. '0.1*{i} + 1.",
+)
+@click.option(
+    "--x-min",
+    type=str,
+    default="0",
+    help="EXPRESSION giving the minimum x value.",
+)
+@click.option(
+    "--x-max",
+    type=str,
+    default="10",
+    help="EXPRESSION giving the maximum x value.",
+)
+@click.option(
+    "--y",
+    type=str,
+    help="EXPRESSION that computes the the value of y (independent variable) for the j'th element. e.g. '0.1*{j} + 1.",
+)
+@click.option(
+    "--y-min",
+    type=str,
+    default="0",
+    help="EXPRESSION giving the minimum y value.",
+)
+@click.option(
+    "--y-max",
+    type=str,
+    default="10",
+    help="EXPRESSION giving the maximum y value.",
+)
+@click.option(
+    "--z",
+    type=str,
+    default="{x}*{y}",
+    help="EXPRESSION that computes the value of z (dependent variable) for a given x,y value pair. e.g. 'sin({x})*sin({y})'.",
+)
+def func2d_cmd(output, nx, ny, x_min, x_max, y_min, y_max, z_expr):
+    """
+    WARNING: This tool runs `eval(...)` on user input. Do NOT use it on untrusted input!
+
+    For example, this command
+
+    $ func --x-min 'exec("import os; print(os.getcwd())")'
+
+    will print the current working directory before erroring out with a TypeError.
+
+    You have been warned...
+
+    =========================
+
+    Generate discretized functions from the command line.
+
+    For example
+
+    $ func -n 100 --x-min -2 --x-max 2 --y "exp(-({x}/0.1)**2)"
+
+    Will print 100 points from a Gaussian function evauated between -2 and 2.
+
+    All options identified as EXPRESSION are evaluated with eval(...), and the result is taken as the parameter's value.
+    This allows the user to 'compute' the value for every parameter. For example, so output sin from 0 to 2 pi
+
+    $ func -n 100 --x-min 0 --x-max 2*pi --y "sin({x})"
+
+    The expression evaluation for the --x and --y options are first formatted with string.format(), so you can refer to a few special variables
+    inside the expressing using the {varname} syntax. The special variables are:
+
+    {N}     the total number of points that will be evaluated.
+
+    {i}     the current loop index value. runs from 0 to N.
+
+    {x_min} the value for x-min.
+
+    {x_max} the value for x-max.
+
+    {dx}    distance between evaluation points, dx = (x_max-xmin)/(N-1) (this is only true if the --x option has not been used to override the default).
+
+    {x}     (only passed to --y expression) the current x value for the function to be evaluated.
+
+    """
+
+    if output == "-":
+        output = "/dev/stdout"
+
+    with open(output, "w") as f:
+        xmin = eval(x_min)
+        xmax = eval(x_max)
+        ymin = eval(y_min)
+        ymax = eval(y_max)
+        NX = eval(nx)
+        NY = eval(ny)
+
+        dx = (xmax - xmin) / (NX - 1)
+        dy = (ymax - ymin) / (NY - 1)
+
+        # Wrap variables in parentheses for safe substitution
+        for var in ["i", "j", "x", "y", "x_min", "x_max", "y_min", "y_max", "dx", "dy"]:
+            z_expr = z_expr.replace(f"{{{var}}}", f"({{{var}}})")
+
+        for i in range(NX):
+            xval = xmin + i * dx
+            for j in range(NY):
+                yval = ymin + j * dy
+                zval = eval(z_expr.format(i=i, j=j, x=xval, y=yval,
+                                          x_min=xmin, x_max=xmax,
+                                          y_min=ymin, y_max=ymax,
+                                          dx=dx, dy=dy))
+                f.write(f"{xval} {yval} {zval}\n")
+
 
 @click.command()
 @click.version_option()

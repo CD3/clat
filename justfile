@@ -1,7 +1,11 @@
 # justfile
 
 # Default task to run when no command is specified
-default: test
+default: list
+
+# List available tasks
+list:
+    @just --list
 
 # Create the virtual environment
 setup:

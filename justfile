@@ -7,11 +7,6 @@ default: list
 list:
     @just --list
 
-# Create the virtual environment
-setup:
-    @echo "Creating virtual environment..."
-    @uv venv
-
 # Install dependencies into the virtual environment
 install:
     @echo "Installing dependencies..."

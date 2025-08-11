@@ -39,8 +39,9 @@ setup(
         clat-func=clat.cli:func_cmd
         clat-transform=clat.cli:transform_cmd
         clat-filter=clat.cli:filter_cmd
+        clat-solve=clat.cli:solve_cmd
     """,
-    install_requires=["click","numpy"],
+    install_requires=["click","numpy","scipy"],
     extras_require={
         "test": ["pytest"]
     },

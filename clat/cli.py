@@ -5,6 +5,8 @@ import re
 import sys
 import math as m
 from numpy import *
+import scipy.interpolate
+import scipy.optimize
 
 
 @click.command()
@@ -485,7 +487,9 @@ def func_cmd(output,n,x_min,x_max,x,y):
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
 @click.option("-o","--output-delimiter",default=" ",help="Use TEXT delimite output columns.")
 @click.option("-e","--expression-delimiter",default=",",help="Use TEXT delimite output columns.")
-def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimiter):
+@click.option("-c","--condition",default=None,help="Only apply transform to lines matching conditional.")
+@click.option("-v","--show_errors",is_flag=True,help="Show errors...")
+def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimiter,condition,show_errors):
     """
     WARNING: This tool runs `eval(...)` on user input. You should NOT use it on input that is not 100% trusted!
 
@@ -527,13 +531,34 @@ def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimit
     expression = re.sub(r'\$(\d+)',r"{\1~9876543210}",expression)
     expression = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",expression)
     expression = re.sub(r'~[0-9]*',r"",expression)
+    if condition:
+        condition = re.sub(r'\$(\d+)',r"{\1~9876543210}",condition)
+        condition = re.sub(r'([0-9])(?=9*~[0-9]*?\1([0-9]))',r"\2",condition)
+        condition = re.sub(r'~[0-9]*',r"",condition)
 
     expressions = expression.split(expression_delimiter)
     for line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
       fields = line.split(delimiter)
-      outputs = [ str(eval(e.format(*fields))) for e in expressions ]
+      transform = False
+      if condition is not None:
+          try:
+              result = eval(condition.format(*fields))
+              if type(result) == bool:
+                  transform = result
+              else:
+                  transform = True
+          except Exception as e:
+              if show_errors:
+                  sys.stderr.write(f"Error in conditional on line '{line.rstrip()}': '{e}'\n")
+      else:
+          transform = True
 
-      print(output_delimiter.join(outputs))
+      if transform:
+          outputs = [ str(eval(e.format(*fields))) for e in expressions ]
+          print(output_delimiter.join(outputs))
+      else:
+          sys.stdout.write(line)
+
 
 
 
@@ -579,3 +604,45 @@ def filter_cmd(expression,files,delimiter,negate):
       match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
       if (not negate and match) or (negate and (not match)):
           sys.stdout.write(_line)
+
+
+
+@click.command()
+@click.version_option()
+@click.argument("files",nargs=-1)
+@click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
+@click.option("--y",default=0,help="The y-value to search for.")
+@click.option("--x-min",default=None,help="The minimum x value to look at.")
+@click.option("--x-max",default=None,help="The maximum x value to look at.")
+def solve_cmd(files,delimiter,x_min,x_max,y):
+    """
+    Find the argument of a function that gives a specific y value.
+    """
+
+    x_values = []
+    y_values = []
+
+    for _line in fileinput.input(files=files if len(files) > 0  else ('-',) ):
+      fields = _line.split(delimiter)
+      x_values.append(float(fields[0]))
+      y_values.append(float(fields[1]))
+
+    if x_min:
+        x_min = float(x_min)
+    else:
+        x_min = x_values[0]
+
+    if x_max:
+        x_max = float(x_max)
+    else:
+        x_max = x_values[-1]
+
+
+    interp = scipy.interpolate.interp1d(x_values,y_values,kind='cubic',fill_value='extrapolate')
+
+    x = scipy.optimize.fsolve( lambda x: interp(x) - y, [x_min,x_max] )
+
+    print(x)
+
+    
+

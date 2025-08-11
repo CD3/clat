@@ -27,24 +27,3 @@ setup(
     license="MIT",
     version=VERSION,
     packages=["clat"],
-    entry_points="""
-        [console_scripts]
-        clat-avg=clat.cli:avg_cmd
-        clat-sum=clat.cli:sum_cmd
-        clat-rms=clat.cli:rms_cmd
-        clat-stddev=clat.cli:stddev_cmd
-        clat-unc=clat.cli:unc_cmd
-        clat-histogram=clat.cli:histogram_cmd
-        clat-plot=clat.cli:plot_cmd
-        clat-func=clat.cli:func_cmd
-        clat-transform=clat.cli:transform_cmd
-        clat-filter=clat.cli:filter_cmd
-        clat-solve=clat.cli:solve_cmd
-    """,
-    install_requires=["click","numpy","scipy"],
-    extras_require={
-        "test": ["pytest"]
-    },
-    tests_require=["clat[test]"],
-    python_requires=">=3.6",
-)

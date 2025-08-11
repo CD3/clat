@@ -43,10 +43,10 @@ clat-transform = "clat.cli:transform_cmd"
 clat-filter = "clat.cli:filter_cmd"
 clat-solve = "clat.cli:solve_cmd"
 
-[project.optional-dependencies]
-dev = [
-    "cram",
-]
-
 [tool.hatch.build.targets.wheel]
 packages = ["clat"]
+
+[tool.hatch.dependency-groups.dev]
+dependencies = [
+    "cram",
+]

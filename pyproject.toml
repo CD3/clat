@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clat"
+version = "1.1"
+description = "Command Line Analysis Tools: A collection of tools for doing data analysis."
+readme = "README.md"
+authors = [
+    {name = "CD Clark III"},
+]
+license = {text = "MIT"}
+requires-python = ">=3.7"
+dependencies = [
+    "click",
+    "numpy",
+    "scipy",
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Homepage = "https://github.com/CD3/clat"
+Issues = "https://github.com/CD3/clat/issues"
+CI = "https://github.com/CD3/clat/actions"
+Changelog = "https://github.com/CD3/clat/releases"
+
+[project.scripts]
+clat-avg = "clat.cli:avg_cmd"
+clat-sum = "clat.cli:sum_cmd"
+clat-rms = "clat.cli:rms_cmd"
+clat-stddev = "clat.cli:stddev_cmd"
+clat-unc = "clat.cli:unc_cmd"
+clat-histogram = "clat.cli:histogram_cmd"
+clat-response = "clat.cli:response_cmd"
+clat-plot = "clat.cli:plot_cmd"
+clat-func = "clat.cli:func_cmd"
+clat-func2d = "clat.cli:func2d_cmd"
+clat-transform = "clat.cli:transform_cmd"
+clat-filter = "clat.cli:filter_cmd"
+clat-solve = "clat.cli:solve_cmd"
+
+[tool.hatch.build.targets.wheel]
+packages = ["clat"]

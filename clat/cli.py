@@ -570,7 +570,8 @@ def transform_cmd(expression,files,delimiter,output_delimiter,expression_delimit
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
 @click.option("-n","--negate",is_flag=True,help="Negate the expression, print lines that do NOT match.")
-def filter_cmd(expression,files,delimiter,negate):
+@click.option("-t","--try-expression",is_flag=True,help="Use try/catch block to test expression and consider a exception to be failure.")
+def filter_cmd(expression,files,delimiter,negate,try_expression):
     """
     WARNING: This tool runs `eval(...)` on user input. You should NOT use it on input that is not 100% trusted!
 
@@ -601,7 +602,14 @@ def filter_cmd(expression,files,delimiter,negate):
       fields = _line.split(delimiter)
       lineno += 1
       line = _line.rstrip()
-      match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
+      if try_expression:
+          try:
+              match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
+          except:
+              match = False
+      else:
+          match = eval(expression.format(*fields,lineno=lineno,line=line.rstrip()))
+
       if (not negate and match) or (negate and (not match)):
           sys.stdout.write(_line)
 

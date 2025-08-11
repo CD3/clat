@@ -46,7 +46,7 @@ clat-solve = "clat.cli:solve_cmd"
 [tool.hatch.build.targets.wheel]
 packages = ["clat"]
 
-[dependency-group.dev]
-dependencies = [
+[dependency-groups]
+dev = [
     "cram",
 ]

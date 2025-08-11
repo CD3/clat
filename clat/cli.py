@@ -619,10 +619,12 @@ def filter_cmd(expression,files,delimiter,negate,try_expression):
 @click.version_option()
 @click.argument("files",nargs=-1)
 @click.option("-d","--delimiter",default=None,help="Use TEXT to split lines into columns.")
-@click.option("--y",default=0,help="The y-value to search for.")
+@click.option("--y",default=0.,help="The y-value to search for.")
+@click.option("--x0",default=None,help="The starting point.")
 @click.option("--x-min",default=None,help="The minimum x value to look at.")
 @click.option("--x-max",default=None,help="The maximum x value to look at.")
-def solve_cmd(files,delimiter,x_min,x_max,y):
+@click.option("--tolerance",default=1e-8,help="The required tolerance. Search will hault if two consecutive iterations differ (percent error) by less than tolerance.")
+def solve_cmd(files,delimiter,x_min,x_max,y,x0,tolerance):
     """
     Find the argument of a function that gives a specific y value.
     """
@@ -645,12 +647,23 @@ def solve_cmd(files,delimiter,x_min,x_max,y):
     else:
         x_max = x_values[-1]
 
+    if x0 is None:
+        x0 = (x_max - x_min)/2
+    else:
+        x0 = float(x0)
 
     interp = scipy.interpolate.interp1d(x_values,y_values,kind='cubic',fill_value='extrapolate')
 
-    x = scipy.optimize.fsolve( lambda x: interp(x) - y, [x_min,x_max] )
+    x = scipy.optimize.fsolve( lambda x: interp(x) - y, x0, xtol=tolerance )[0]
+    
+    if x < x_min:
+        print(f"< {x_min}")
 
-    print(x)
+    elif x > x_max:
+        print(f"> {x_max}")
+
+    else:
+        print(x)
 
     
 
